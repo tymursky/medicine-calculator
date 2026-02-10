@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Калькулятор видачі ліків</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: #eee;
+      padding: 1rem;
+    }
+
+    .calculator {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0 0 1.25rem 0;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .field {
+      margin-bottom: 1rem;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 0.35rem;
+    }
+
+    .field select,
+    .field input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-family: inherit;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+    }
+
+    .field select:focus,
+    .field input:focus {
+      outline: none;
+      border-color: #00d9ff;
+    }
+
+    .field input[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+    .field input[type="number"]::-webkit-outer-spin-button,
+    .field input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .type-badge {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      background: rgba(0, 217, 255, 0.2);
+      color: #00d9ff;
+      margin-top: 0.5rem;
+    }
+
+    .type-badge.hidden {
+      display: none;
+    }
+
+    button.calculate {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 1rem;
+      font-family: inherit;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #00d9ff 0%, #00a8cc 100%);
+      color: #1a1a2e;
+      transition: all 0.15s ease;
+    }
+
+    button.calculate:hover {
+      background: linear-gradient(135deg, #33e1ff 0%, #00d9ff 100%);
+      transform: translateY(-1px);
+    }
+
+    .result {
+      margin-top: 1.25rem;
+      padding: 1rem 1.25rem;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .result-label {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .result-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #00d9ff;
+    }
+
+    .result.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h1>Калькулятор видачі ліків</h1>
+
+    <div class="field">
+      <label>Ліки</label>
+      <select id="medication">
+        <option value="">— Оберіть ліки —</option>
+        <option value="colomycin" data-type="ампули">Коломіцин</option>
+        <option value="kreon" data-type="капсули">Креон</option>
+        <option value="pulmozyme" data-type="небули">Пульмозим</option>
+      </select>
+      <span class="type-badge hidden" id="typeBadge"></span>
+    </div>
+
+    <div class="field">
+      <label>Кількість на день</label>
+      <input type="number" id="perDay" min="1" step="0.5" placeholder="Скільки приймати щодня">
+    </div>
+
+    <div class="field field-row">
+      <div class="field">
+        <label>З дати</label>
+        <input type="date" id="dateFrom">
+      </div>
+      <div class="field">
+        <label>По дату</label>
+        <input type="date" id="dateTo">
+      </div>
+    </div>
+
+    <button class="calculate" id="btnCalculate">Розрахувати</button>
+
+    <div class="result hidden" id="result">
+      <div class="result-label">Видати пацієнту</div>
+      <div class="result-value" id="resultValue"></div>
+    </div>
+  </div>
+
+  <script>
+    const medications = [
+      { id: 'colomycin', name: 'Коломіцин', type: 'ампули' },
+      { id: 'kreon', name: 'Креон', type: 'капсули' },
+      { id: 'pulmozyme', name: 'Пульмозим', type: 'небули' }
+    ];
+
+    const selectMedication = document.getElementById('medication');
+    const typeBadge = document.getElementById('typeBadge');
+    const inputPerDay = document.getElementById('perDay');
+    const inputDateFrom = document.getElementById('dateFrom');
+    const inputDateTo = document.getElementById('dateTo');
+    const btnCalculate = document.getElementById('btnCalculate');
+    const resultBlock = document.getElementById('result');
+    const resultValue = document.getElementById('resultValue');
+
+    selectMedication.addEventListener('change', () => {
+      const opt = selectMedication.selectedOptions[0];
+      const type = opt?.dataset?.type || '';
+      if (type) {
+        typeBadge.textContent = type;
+        typeBadge.classList.remove('hidden');
+      } else {
+        typeBadge.classList.add('hidden');
+      }
+    });
+
+    function getDaysDiff(from, to) {
+      const fromDate = new Date(from);
+      const toDate = new Date(to);
+      const diff = toDate - fromDate;
+      if (diff < 0) return 0;
+      return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+    }
+
+    function formatQuantity(num, type) {
+      const n = Math.round(num);
+      if (type === 'ампули') return n + ' ' + (n === 1 ? 'ампулу' : n < 5 ? 'ампули' : 'ампул');
+      if (type === 'капсули') return n + ' ' + (n === 1 ? 'капсулу' : n < 5 ? 'капсули' : 'капсул');
+      if (type === 'небули') return n + ' ' + (n === 1 ? 'небул' : n < 5 ? 'небули' : 'небул');
+      return n + ' од.';
+    }
+
+    btnCalculate.addEventListener('click', () => {
+      const opt = selectMedication.selectedOptions[0];
+      const type = opt?.dataset?.type || '';
+      const med = medications.find(m => m.id === selectMedication.value);
+      const perDay = parseFloat(inputPerDay.value);
+      const dateFrom = inputDateFrom.value;
+      const dateTo = inputDateTo.value;
+
+      if (!med) {
+        alert('Оберіть ліки');
+        return;
+      }
+      if (!perDay || perDay <= 0) {
+        alert('Введіть кількість на день');
+        return;
+      }
+      if (!dateFrom || !dateTo) {
+        alert('Вкажіть період прийому');
+        return;
+      }
+
+      const days = getDaysDiff(dateFrom, dateTo);
+      const total = perDay * days;
+
+      resultValue.textContent = formatQuantity(total, type);
+      resultBlock.classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>
