@@ -290,6 +290,22 @@
       } else {
         typeBadge.classList.add('hidden');
       }
+      
+      // Очищаємо поля крім дат
+      inputPerDay.value = '';
+      inputPerPackage.value = '';
+      
+      // Ховаємо результат
+      resultBlock.classList.add('hidden');
+    });
+
+    // Очищаємо результат при зміні дат
+    inputDateFrom.addEventListener('change', () => {
+      resultBlock.classList.add('hidden');
+    });
+
+    inputDateTo.addEventListener('change', () => {
+      resultBlock.classList.add('hidden');
     });
 
     function getDaysDiff(from, to) {
