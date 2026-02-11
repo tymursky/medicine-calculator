@@ -362,7 +362,7 @@
         const packages = Math.ceil(total / perPackage);
         const actualTotal = packages * perPackage;
         
-        resultText += '<br><span style="font-size: 1.2rem; margin-top: 0.5rem; display: block;">' + formatPackages(packages) + '</span>';
+        resultText += '<br><span style="font-size: 1.2rem; margin-top: 0.5rem; display: block;">' + formatPackages(packages) + ' (' + formatQuantity(actualTotal, type) + ')</span>';
         
         // Якщо залишок — показуємо до якої дати вистачить
         if (actualTotal > total) {
