@@ -11,6 +11,10 @@
       box-sizing: border-box;
     }
 
+    html, body {
+      overflow-x: hidden;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -33,6 +37,11 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       width: 100%;
       max-width: 400px;
+      min-width: 0;
+    }
+    
+    .calculator > * {
+      max-width: 100%;
     }
 
     h1 {
@@ -57,6 +66,7 @@
     .field select,
     .field input {
       width: 100%;
+      min-width: 0;
       padding: 0.75rem 1rem;
       font-family: inherit;
       font-size: 1rem;
@@ -84,8 +94,72 @@
 
     .field-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 1rem;
+      min-width: 0;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .field-row .field {
+      min-width: 0;
+      max-width: 100%;
+    }
+    
+    .field-row .field input {
+      max-width: 100% !important;
+    }
+
+    .field input[type="date"] {
+      max-width: 100%;
+      width: 100% !important;
+      -webkit-appearance: none;
+      appearance: none;
+      min-height: 3rem;
+    }
+    
+    input[type="date"]::-webkit-date-and-time-value {
+      text-align: left;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 0.5rem;
+        width: 100vw;
+      }
+
+      .calculator {
+        padding: 1rem;
+        max-width: calc(100vw - 1rem);
+      }
+
+      .field-row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      
+      .field, .field-row {
+        max-width: 100%;
+      }
+
+      .field input[type="date"] {
+        padding: 0.6rem 0.5rem;
+        font-size: 0.9rem;
+        width: 100%;
+        min-width: 0 !important;
+      }
+      
+      input[type="date"]::-webkit-datetime-edit {
+        display: block;
+      }
+      
+      input[type="date"]::-webkit-calendar-picker-indicator {
+        margin-left: auto;
+      }
+      
+      .field select,
+      .field input {
+        max-width: 100%;
+      }
     }
 
     .type-badge {
