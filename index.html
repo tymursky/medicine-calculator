@@ -240,6 +240,11 @@
       <input type="number" id="perDay" min="1" step="0.5" placeholder="Скільки приймати щодня">
     </div>
 
+    <div class="field">
+      <label>Кількість в упаковці</label>
+      <input type="number" id="perPackage" min="1" step="1" placeholder="Скільки одиниць в упаковці">
+    </div>
+
     <div class="field field-row">
       <div class="field">
         <label>З дати</label>
@@ -269,6 +274,7 @@
     const selectMedication = document.getElementById('medication');
     const typeBadge = document.getElementById('typeBadge');
     const inputPerDay = document.getElementById('perDay');
+    const inputPerPackage = document.getElementById('perPackage');
     const inputDateFrom = document.getElementById('dateFrom');
     const inputDateTo = document.getElementById('dateTo');
     const btnCalculate = document.getElementById('btnCalculate');
@@ -302,11 +308,19 @@
       return n + ' од.';
     }
 
+    function formatPackages(num) {
+      const n = Math.round(num);
+      if (n === 1) return n + ' упаковку';
+      if (n < 5) return n + ' упаковки';
+      return n + ' упаковок';
+    }
+
     btnCalculate.addEventListener('click', () => {
       const opt = selectMedication.selectedOptions[0];
       const type = opt?.dataset?.type || '';
       const med = medications.find(m => m.id === selectMedication.value);
       const perDay = parseFloat(inputPerDay.value);
+      const perPackage = parseFloat(inputPerPackage.value);
       const dateFrom = inputDateFrom.value;
       const dateTo = inputDateTo.value;
 
@@ -326,7 +340,32 @@
       const days = getDaysDiff(dateFrom, dateTo);
       const total = perDay * days;
 
-      resultValue.textContent = formatQuantity(total, type);
+      let resultText = formatQuantity(total, type);
+      
+      if (perPackage && perPackage > 0) {
+        const packages = Math.ceil(total / perPackage);
+        const actualTotal = packages * perPackage;
+        
+        resultText += '<br><span style="font-size: 1.2rem; margin-top: 0.5rem; display: block;">' + formatPackages(packages) + '</span>';
+        
+        // Якщо залишок — показуємо до якої дати вистачить
+        if (actualTotal > total) {
+          const daysWithPackages = Math.floor(actualTotal / perDay);
+          const startDate = new Date(dateFrom);
+          const endDate = new Date(startDate);
+          endDate.setDate(startDate.getDate() + daysWithPackages - 1);
+          
+          const endDateStr = endDate.toLocaleDateString('uk-UA', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          });
+          
+          resultText += '<br><span style="font-size: 0.9rem; margin-top: 0.5rem; display: block; color: rgba(255, 255, 255, 0.7);">Вистачить до ' + endDateStr + '</span>';
+        }
+      }
+
+      resultValue.innerHTML = resultText;
       resultBlock.classList.remove('hidden');
     });
   </script>
